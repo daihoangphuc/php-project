@@ -1,0 +1,2 @@
+# Backup database hàng ngày lúc 1 giờ sáng
+0 1 * * * php /path/to/your/project/cron/backup.php 

@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /config/
+Disallow: /modules/
+Disallow: /helpers/
+Disallow: /uploads/
+Allow: /uploads/*.jpg
+Allow: /uploads/*.jpeg
+Allow: /uploads/*.png
+Allow: /uploads/*.gif
+
+Sitemap: https://example.com/sitemap.xml 
