@@ -4,26 +4,25 @@ function connectDatabase() {
     $username = 'root';
     $password = '';
     $database = 'clb_hstv';
-    $port = 3307; // Thay đổi thành cổng bạn muốn sử dụng
+    $port = 3306;
 
     try {
-        // Tạo kết nối với PDO
         $conn = new mysqli($host, $username, $password, $database, $port);
         
-        // Kiểm tra kết nối
         if ($conn->connect_error) {
-            throw new Exception("Kết nối thất bại: " . $conn->connect_error);
+            // In thông báo lỗi chi tiết hơn để debug
+            die("Lỗi kết nối MySQL: " . $conn->connect_error . 
+                "<br>Host: $host" .
+                "<br>Database: $database" .
+                "<br>Port: $port");
         }
         
-        // Đặt charset là utf8mb4
         if (!$conn->set_charset("utf8mb4")) {
-            throw new Exception("Lỗi khi thiết lập charset: " . $conn->error);
+            die("Lỗi charset: " . $conn->error);
         }
         
         return $conn;
     } catch (Exception $e) {
-        // Log lỗi và hiển thị thông báo
-        error_log($e->getMessage());
-        die("Có lỗi xảy ra khi kết nối đến cơ sở dữ liệu. Vui lòng thử lại sau.");
+        die("Lỗi: " . $e->getMessage());
     }
 }

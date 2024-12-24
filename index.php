@@ -1,16 +1,14 @@
 <?php
-session_start();
-require_once 'config/database.php';
-require_once 'includes/functions.php';
+require_once 'config/init.php';
 
 // Xử lý routing
 $module = isset($_GET['module']) ? $_GET['module'] : 'home';
 $action = isset($_GET['action']) ? $_GET['action'] : 'index';
 
 // Kiểm tra file tồn tại
-$file = "modules/$module/$action.php";
+$file = MODULES_PATH . "/$module/$action.php";
 if (!file_exists($file)) {
-    $file = 'modules/errors/404.php';
+    die("Không tìm thấy file: " . $file);
 }
 
 // Lưu nội dung vào buffer

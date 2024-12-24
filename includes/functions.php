@@ -35,10 +35,13 @@ function validateInput($data) {
     return $data;
 }
 
-function logActivity($ip, $user, $action, $status, $details = '') {
+function logActivity($ip, $user, $action, $result, $details = '') {
     global $conn;
-    $sql = "INSERT INTO nhatky (IP, NguoiDung, HanhDong, TrangThai, ChiTiet) VALUES (?, ?, ?, ?, ?)";
+    
+    $sql = "INSERT INTO nhatkyhoatdong (IP, NguoiDung, HanhDong, KetQua, ChiTiet) 
+            VALUES (?, ?, ?, ?, ?)";
+            
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sssss", $ip, $user, $action, $status, $details);
+    $stmt->bind_param("sssss", $ip, $user, $action, $result, $details);
     $stmt->execute();
 } 

@@ -18,7 +18,7 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <?php if (isset($_SESSION['user'])): ?>
-                        <a href="?module=profile" class="text-gray-700 hover:text-gray-900">
+                        <a href="?module=auth&action=profile" class="text-gray-700 hover:text-gray-900">
                             <?= htmlspecialchars($_SESSION['user']['HoTen']) ?>
                         </a>
                         <a href="?module=auth&action=logout" class="text-red-600 hover:text-red-700">
@@ -36,7 +36,14 @@
 
     <!-- Main content -->
     <main class="container mx-auto px-4 py-8">
-        <?php include $content; ?>
+        <?php 
+            if(isset($content)) {
+                echo $content;
+            }
+            else {
+                echo '<p class="text-center text-lg font-semibold">Trang bạn truy cập không tồn tại.</p>';
+            }
+        ?>
     </main>
 
     <!-- Footer -->

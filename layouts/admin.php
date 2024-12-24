@@ -9,7 +9,7 @@ if (!isAdmin()) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - <?= $pageTitle ?? 'Dashboard' ?></title>
+    <title><?= $pageTitle ?? 'Admin Panel' ?></title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -20,7 +20,7 @@ if (!isAdmin()) {
         <div class="flex items-center justify-center h-16 bg-gray-900">
             <span class="text-white text-xl font-semibold">Admin Panel</span>
         </div>
-        <nav class="mt-5">
+        <nav class="mt-4">
             <a href="?module=dashboard" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-700">
                 <span>Dashboard</span>
             </a>
@@ -50,10 +50,22 @@ if (!isAdmin()) {
 
     <!-- Main content -->
     <div class="ml-64 p-8">
-        <?php include $content; ?>
+        <!-- Header -->
+        <?php include 'includes/admin_header.php'; ?>
+        
+        <!-- Content -->
+        <main class="mt-16">
+            <?php 
+            if(isset($content)) {
+                echo $content;
+            } else {
+                echo '<p class="text-center text-lg font-semibold">Trang bạn truy cập không tồn tại.</p>';
+            }
+            ?>
+        </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
-    <script src="assets/js/admin.js"></script>
+    <script src="assets/js/main.js"></script>
 </body>
 </html> 

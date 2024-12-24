@@ -1,17 +1,6 @@
 <?php
 session_start();
 
-// Kiểm tra số lần đăng nhập sai
-if (!isset($_SESSION['login_attempts'])) {
-    $_SESSION['login_attempts'] = 0;
-    $_SESSION['last_attempt'] = time();
-}
-
-// Nếu đã đăng nhập sai 5 lần trong 15 phút
-if ($_SESSION['login_attempts'] >= 5 && (time() - $_SESSION['last_attempt']) < 900) {
-    die("Tài khoản đã bị khóa tạm thời. Vui lòng thử lại sau 15 phút.");
-}
-
 require_once 'modules/auth/auth.php';
 
 // Nếu đã đăng nhập thì chuyển về trang chủ
@@ -33,8 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     } else {
         $error = $result['message'];
-        $_SESSION['login_attempts']++;
-        $_SESSION['last_attempt'] = time();
     }
 }
 ?>
@@ -54,8 +41,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <?php if ($error): ?>
-            <div class="bg-red-50 text-red-800 rounded-lg p-4">
-                <?php echo $error; ?>
+            <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+                <div class="flex items-center">
+                    <svg class="w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM10 15a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm1-4a1 1 0 0 1-2 0V6a1 1 0 0 1 2 0v5Z"/>
+                    </svg>
+                    <span class="font-medium"><?php echo $error; ?></span>
+                </div>
             </div>
         <?php endif; ?>
 

@@ -7,25 +7,29 @@ class Auth {
     }
     
     public function login($username, $password) {
-        // Kiểm tra số lần đăng nhập sai
-        $attempts = $this->checkLoginAttempts($username);
-        if ($attempts >= 5) {
-            return ['success' => false, 'message' => 'Tài khoản đã bị khóa 30 phút do đăng nhập sai nhiều lần'];
-        }
-        
         // Kiểm tra đăng nhập
-        $sql = "SELECT * FROM nguoidung WHERE TenDangNhap = ? LIMIT 1";
+        $sql = "SELECT * FROM nguoidung WHERE TenDangNhap = ? AND TranThai = 1 LIMIT 1";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("s", $username);
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();
         
-        if ($user && password_verify($password, $user['MatKhau'])) {
+        if ($user && password_verify($password, $user['MatKhauHash'])) {
+            // Lấy vai trò của user
+            $sql = "SELECT vt.TenVaiTro 
+                    FROM vaitronguoidung vtn 
+                    JOIN vaitro vt ON vt.Id = vtn.VaiTroId 
+                    WHERE vtn.NguoiDungId = ?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("i", $user['Id']);
+            $stmt->execute();
+            $role = $stmt->get_result()->fetch_assoc()['TenVaiTro'];
+            
             $_SESSION['user'] = [
                 'id' => $user['Id'],
                 'username' => $user['TenDangNhap'],
-                'name' => $user['HoTen'],
-                'role' => $user['Quyen']
+                'HoTen' => $user['HoTen'],
+                'role' => $role
             ];
             
             logActivity(
@@ -38,32 +42,15 @@ class Auth {
             return ['success' => true];
         }
         
-        // Lưu lần đăng nhập sai
-        $this->addLoginAttempt($username);
+        logActivity(
+            $_SERVER['REMOTE_ADDR'],
+            $username,
+            'Đăng nhập',
+            'Thất bại',
+            'Sai tên đăng nhập hoặc mật khẩu'
+        );
         
         return ['success' => false, 'message' => 'Tên đăng nhập hoặc mật khẩu không đúng'];
-    }
-    
-    private function checkLoginAttempts($username) {
-        // Xóa các lần đăng nhập cũ (quá 30 phút)
-        $sql = "DELETE FROM dangnhap_sai WHERE ThoiGian < DATE_SUB(NOW(), INTERVAL 30 MINUTE)";
-        $this->conn->query($sql);
-        
-        // Đếm số lần đăng nhập sai
-        $sql = "SELECT COUNT(*) as total FROM dangnhap_sai WHERE TenDangNhap = ? AND ThoiGian > DATE_SUB(NOW(), INTERVAL 30 MINUTE)";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("s", $username);
-        $stmt->execute();
-        $result = $stmt->get_result()->fetch_assoc();
-        
-        return $result['total'];
-    }
-    
-    private function addLoginAttempt($username) {
-        $sql = "INSERT INTO dangnhap_sai (TenDangNhap, ThoiGian, IP) VALUES (?, NOW(), ?)";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("ss", $username, $_SERVER['REMOTE_ADDR']);
-        $stmt->execute();
     }
     
     public function register($data) {

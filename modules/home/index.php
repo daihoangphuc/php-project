@@ -1,6 +1,19 @@
 <?php
-// Gọi hàm connectDatabase
+// Bỏ các require vì đã được include từ index.php
+// Bỏ phần HTML/CSS vì đã có layout
+
+// Code PHP xử lý
 $conn = connectDatabase();
+if (!$conn) {
+    die("Lỗi kết nối database");
+}
+
+// Kiểm tra lỗi query
+$result = $conn->query("SELECT * FROM hoatdong");
+if (!$result) {
+    die("Lỗi truy vấn: " . $conn->error);
+}
+
 // Lấy hoạt động sắp diễn ra
 $upcoming_activities = $conn->query("
     SELECT * FROM hoatdong 

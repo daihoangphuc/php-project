@@ -14,21 +14,21 @@ $types = "";
 
 if (isset($_GET['type']) && $_GET['type'] !== '') {
     $type = (int)$_GET['type'];
-    $conditions[] = "tc.Loai = ?";
+    $conditions[] = "tc.LoaiGiaoDich = ?";
     $params[] = $type;
     $types .= "i";
 }
 
 if (isset($_GET['start_date'])) {
     $startDate = validateInput($_GET['start_date']);
-    $conditions[] = "tc.NgayThucHien >= ?";
+    $conditions[] = "tc.NgayGiaoDich >= ?";
     $params[] = $startDate;
     $types .= "s";
 }
 
 if (isset($_GET['end_date'])) {
     $endDate = validateInput($_GET['end_date']);
-    $conditions[] = "tc.NgayThucHien <= ?";
+    $conditions[] = "tc.NgayGiaoDich <= ?";
     $params[] = $endDate;
     $types .= "s";
 }
@@ -36,13 +36,13 @@ if (isset($_GET['end_date'])) {
 // Lấy danh sách giao dịch tài chính
 $sql = "SELECT tc.*, nd.HoTen as NguoiTao 
         FROM taichinh tc
-        LEFT JOIN nguoidung nd ON tc.NguoiTaoId = nd.Id";
+        LEFT JOIN nguoidung nd ON tc.NguoiDungId = nd.Id";
 
 if (!empty($conditions)) {
     $sql .= " WHERE " . implode(" AND ", $conditions);
 }
 
-$sql .= " ORDER BY tc.NgayThucHien DESC LIMIT ? OFFSET ?";
+$sql .= " ORDER BY tc.NgayGiaoDich DESC LIMIT ? OFFSET ?";
 $types .= "ii";
 $params[] = $limit;
 $params[] = $offset;
@@ -58,7 +58,7 @@ $transactions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $totalIncome = 0;
 $totalExpense = 0;
 foreach ($transactions as $trans) {
-    if ($trans['Loai'] == 1) { // Thu
+    if ($trans['LoaiGiaoDich'] == 1) { // Thu
         $totalIncome += $trans['SoTien'];
     } else { // Chi
         $totalExpense += $trans['SoTien'];
@@ -79,15 +79,18 @@ foreach ($transactions as $trans) {
 
     <!-- Thống kê tổng quan -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div class="bg-green-100 p-6 rounded-lg">
+        <div class="bg-green-100 p-6 rounded-lg border border-green-300">
+            <i class="fas fa-coins text-green-600"></i>
             <h3 class="text-green-800 font-semibold mb-2">Tổng thu</h3>
             <p class="text-2xl text-green-600"><?= number_format($totalIncome) ?> VNĐ</p>
         </div>
-        <div class="bg-red-100 p-6 rounded-lg">
+        <div class="bg-red-100 p-6 rounded-lg border border-red-300">
+            <i class="fas fa-coins text-red-600"></i>
             <h3 class="text-red-800 font-semibold mb-2">Tổng chi</h3>
             <p class="text-2xl text-red-600"><?= number_format($totalExpense) ?> VNĐ</p>
         </div>
-        <div class="bg-blue-100 p-6 rounded-lg">
+        <div class="bg-blue-100 p-6 rounded-lg border border-blue-300 ">
+            <i class="fas fa-coins text-blue-600"></i>
             <h3 class="text-blue-800 font-semibold mb-2">Số dư</h3>
             <p class="text-2xl text-blue-600"><?= number_format($totalIncome - $totalExpense) ?> VNĐ</p>
         </div>
@@ -136,12 +139,12 @@ foreach ($transactions as $trans) {
                         <td class="px-6 py-4"><?= htmlspecialchars($trans['MoTa']) ?></td>
                         <td class="px-6 py-4">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                       <?= $trans['Loai'] == 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
-                                <?= $trans['Loai'] == 1 ? 'Thu' : 'Chi' ?>
+                                       <?= $trans['LoaiGiaoDich'] == 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
+                                <?= $trans['LoaiGiaoDich'] == 1 ? 'Thu' : 'Chi' ?>
                             </span>
                         </td>
                         <td class="px-6 py-4"><?= number_format($trans['SoTien']) ?> VNĐ</td>
-                        <td class="px-6 py-4"><?= date('d/m/Y', strtotime($trans['NgayThucHien'])) ?></td>
+                        <td class="px-6 py-4"><?= date('d/m/Y', strtotime($trans['NgayGiaoDich'])) ?></td>
                         <td class="px-6 py-4"><?= htmlspecialchars($trans['NguoiTao']) ?></td>
                         <?php if (isAdmin()): ?>
                             <td class="px-6 py-4 text-right">
@@ -172,12 +175,12 @@ new Chart(ctx, {
     type: 'bar',
     data: {
         labels: <?= json_encode(array_map(function($trans) { 
-            return date('d/m/Y', strtotime($trans['NgayThucHien'])); 
+            return date('d/m/Y', strtotime($trans['NgayGiaoDich'])); 
         }, $transactions)) ?>,
         datasets: [{
             label: 'Thu',
             data: <?= json_encode(array_map(function($trans) { 
-                return $trans['Loai'] == 1 ? $trans['SoTien'] : 0; 
+                return $trans['LoaiGiaoDich'] == 1 ? $trans['SoTien'] : 0; 
             }, $transactions)) ?>,
             backgroundColor: 'rgba(34, 197, 94, 0.5)',
             borderColor: 'rgb(34, 197, 94)',
@@ -185,7 +188,7 @@ new Chart(ctx, {
         }, {
             label: 'Chi',
             data: <?= json_encode(array_map(function($trans) { 
-                return $trans['Loai'] == 0 ? $trans['SoTien'] : 0; 
+                return $trans['LoaiGiaoDich'] == 0 ? $trans['SoTien'] : 0; 
             }, $transactions)) ?>,
             backgroundColor: 'rgba(239, 68, 68, 0.5)',
             borderColor: 'rgb(239, 68, 68)',
